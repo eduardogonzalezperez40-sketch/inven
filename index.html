@@ -70,7 +70,8 @@ Selecciona un departamento
     <option>Biblioteca</option>
 </select>
 
-<input type="text" id="departamento" placeholder="Departamento">
+<input type="text" id="departamento" 
+placeholder="Departamento">
 <input type="text" id="id" placeholder="ID">
 <input type="text" id="comp" placeholder="Analisis de Computo">
 <input type="text" id="sist" placeholder="Analisis de Sistemas">
@@ -79,6 +80,16 @@ Selecciona un departamento
 
 <button onclick="agregar()" id="btn">
 Agregar
+</button>
+
+<button onclick="exportar()">
+Exportar Datos
+</button>
+
+<input type="file" id="archivo" hidden>
+
+<button onclick="archivo.click()">
+Importar Datos
 </button>
 
 <table>
@@ -137,14 +148,13 @@ function agregar(){
     }
 
     let registro={
-        dep: departamento.value.trim() || dep.value,
-        id:id.value,
-        comp:comp.value,
-        sist:sist.value,
-        mant:mant.value,
-        obs:obs.value
-    };
-
+    dep: departamento.value.trim() || dep.value,
+    id:id.value,
+    comp:comp.value,
+    sist:sist.value,
+    mant:mant.value,
+    obs:obs.value
+};
     if(editarFila==-1){
         datos.push(registro);
     }else{
@@ -156,7 +166,6 @@ function agregar(){
     guardar();
     mostrar();
 
-    departamento.value="";
     id.value="";
     comp.value="";
     sist.value="";
@@ -198,8 +207,9 @@ function eliminar(i){
 function editar(i){
 
     let d=datos[i];
-
+    
     departamento.value=d.dep;
+
     id.value=d.id;
     comp.value=d.comp;
     sist.value=d.sist;
@@ -210,6 +220,59 @@ function editar(i){
 
     btn.innerHTML="Guardar cambios";
 }
+
+function exportar(){
+
+    let todo={};
+
+    [
+        "Dirección y áreas administrativas",
+        "Laboratorio de informática I",
+        "Laboratorio de informática II",
+        "Biblioteca"
+    ].forEach(d=>{
+
+        todo[d]=JSON.parse(
+            localStorage.getItem("inventario_"+d)
+        )||[];
+    });
+
+    let archivo=new Blob(
+        [JSON.stringify(todo,null,2)],
+        {type:"application/json"}
+    );
+
+    let a=document.createElement("a");
+
+    a.href=URL.createObjectURL(archivo);
+    a.download="inventario.json";
+    a.click();
+}
+
+archivo.onchange=(e)=>{
+
+    let lector=new FileReader();
+
+    lector.onload=(x)=>{
+
+        let contenido=
+        JSON.parse(x.target.result);
+
+        for(let d in contenido){
+
+            localStorage.setItem(
+                "inventario_"+d,
+                JSON.stringify(contenido[d])
+            );
+        }
+
+        alert("Datos importados correctamente");
+
+        cargar();
+    };
+
+    lector.readAsText(e.target.files[0]);
+};
 
 </script>
 
